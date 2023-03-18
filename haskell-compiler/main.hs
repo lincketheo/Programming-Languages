@@ -1,9 +1,22 @@
+module Main where
 
-x :: Int
-x = 3
+import Parser
+
+import Control.Monad.Trans
+import System.Console.Haskeline
+
+process :: String -> IO ()
+process line = do
+  let res = parseToplevel line
+  case res of
+    Left err -> print err
+    Right ex -> mapM_ print ex
 
 main :: IO ()
-output :: String
-output = "Hello World, the output is: " ++ show x ++ "\n have a nice day!\n"
-main = putStrLn output
-
+main = runInputT defaultSettings loop
+  where
+  loop = do
+    minput <- getInputLine "ready> "
+    case minput of
+      Nothing -> outputStrLn "Goodbye."
+      Just input -> (liftIO $ process input) >> loop
